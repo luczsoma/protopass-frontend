@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Router } from '@angular/router';
+import { CryptoService } from '../../services/crypto.service';
 
 @Component({
   selector: 'app-login',
@@ -16,18 +17,23 @@ export class LoginComponent {
   constructor(
     private sessionService: SessionService,
     private router: Router,
+    private cryptoService: CryptoService,
   ) { }
 
+  public get passwordPlaceholder(): string {
+    const alphabet = CryptoService.lower + CryptoService.upper + CryptoService.number + CryptoService.symbol;
+    return this.cryptoService.randomFromAlphabet(32, alphabet);
+  }
+
   public async login() {
-    const success: boolean = await this.sessionService.login(this.email, this.password);
-
-    this.email = '';
-    this.password = '';
-
-    if (success) {
+    try {
+      await this.sessionService.login(this.email, this.password);
       await this.router.navigate(['/dashboard']);
-    } else {
+    } catch (e) {
       this.loginError = true;
+    } finally {
+      this.email = '';
+      this.email = '';
     }
   }
 

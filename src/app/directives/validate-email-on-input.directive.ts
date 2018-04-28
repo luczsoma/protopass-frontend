@@ -13,7 +13,7 @@ export class ValidateEmailOnInputDirective {
   ) { }
 
   public validate(control: AbstractControl): ValidationErrors | null {
-    const email = control.value;
+    const email: string = control.value;
     const isValid = this.utils.isEmailValid(email);
     return isValid ? null : { 'invalidEmailAddress': { value: email } };
   }

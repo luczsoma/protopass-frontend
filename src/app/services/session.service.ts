@@ -8,18 +8,22 @@ export class SessionService {
     private router: Router,
   ) { }
 
-  async login(email: string, password: string): Promise<boolean> {
-    return false;
+  async login(email: string, password: string): Promise<void> {
+    throw new Error('Not implemented');
   }
 
-  async logout() {
+  async logout(): Promise<void> {
     window.sessionStorage.clear();
     await this.router.navigate(['/login']);
   }
 
-  isLoggedIn() {
+  isLoggedIn(): boolean {
     const sessionId = window.sessionStorage.getItem('SessionId');
     return !!sessionId;
+  }
+
+  async register(email: string, password: string): Promise<void> {
+    throw new Error('Not implemented');
   }
 
 }

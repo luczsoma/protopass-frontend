@@ -6,8 +6,6 @@
         <p class="lead">Online, browser-based, end-to-end encrypted password manager.</p>
       </div>
       <div class="col-md">
-        <div [hidden]="!loginError" class="alert alert-danger">We could not log you in. Please review your credentials.</div>
-
         <form (submit)="login()">
           <div class="form-group">
             <input type="email"
@@ -20,14 +18,16 @@
           <div class="form-group">
             <input type="password"
                    class="form-control"
-                   placeholder="9zSALS;vuY}=`0`XnF!K\9v<Tv9%A($_"
+                   [placeholder]="passwordPlaceholder"
                    [(ngModel)]="password"
                    name="password"
                    required>
           </div>
 
+          <div [hidden]="!loginError" class="alert alert-danger">We could not log you in. Please review your credentials.</div>
+
           <p class="text-right">
-            <a routerLink="/register">Register</a>&nbsp;or&nbsp;&nbsp;<button type="submit" class="btn btn-primary">Log in</button>
+            <a routerLink="/register" class="btn btn-link">Register</a><button type="submit" class="btn btn-primary">Log in</button>
           </p>
         </form>
 

@@ -16,6 +16,8 @@ import { RegisterComponent } from './components/register/register.component';
 import { ValidateEmailOnInputDirective } from './directives/validate-email-on-input.directive';
 import { FormsModule } from '@angular/forms';
 import { UtilsService } from './services/utils.service';
+import { ValidatePasswordStrengthOnInputDirective } from './directives/validate-password-strength-on-input.directive';
+import { CryptoService } from './services/crypto.service';
 
 
 @NgModule({
@@ -27,6 +29,7 @@ import { UtilsService } from './services/utils.service';
     LoginComponent,
     RegisterComponent,
     ValidateEmailOnInputDirective,
+    ValidatePasswordStrengthOnInputDirective,
   ],
   imports: [
     BrowserModule,
@@ -38,7 +41,7 @@ import { UtilsService } from './services/utils.service';
     { provide: SessionService, useClass: SessionService },
     { provide: UtilsService, useClass: UtilsService },
     { provide: AuthGuard, useClass: AuthGuard },
-    { provide: ValidateEmailOnInputDirective, useClass: ValidateEmailOnInputDirective },
+    { provide: CryptoService, useClass: CryptoService },
   ],
   bootstrap: [ AppComponent ]
 })

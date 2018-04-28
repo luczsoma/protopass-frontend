@@ -1,3 +1,82 @@
-<p>
-  register works!
-</p>
+<div class="container">
+  <div class="jumbotron">
+    <div class="row">
+      <div class="col-md">
+        <h1>Register to Protopass</h1>
+
+        <p>Registration to Protopass involves entering your email address and securing your profile with a login password.
+          After your first login, when your user profile is created, you will need to enter another secure password for
+          encrypting your user profile on the client side.</p>
+
+        <form (submit)="register()" novalidate>
+          <div class="form-group">
+            <label for="email">Your email address</label>
+            <input type="email"
+                   id="email"
+                   class="form-control"
+                   placeholder="john@protonmail.com"
+                   name="email"
+                   #emailField="ngModel"
+                   appValidateEmailOnInput
+                   [ngClass]="{
+                     'is-valid': !emailField.invalid,
+                     'is-invalid': emailField.invalid && (emailField.dirty || emailField.touched)
+                   }"
+                   [(ngModel)]="email"
+                   required
+            >
+            <div class="invalid-feedback">
+              Please enter a valid email address.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password-1">Your login password</label>
+            <input type="password"
+                   id="login-password-1"
+                   class="form-control"
+                   name="login-password-1"
+                   #loginPasswordField1="ngModel"
+                   appValidatePasswordStrengthOnInput
+                   [ngClass]="{
+                     'is-valid': !loginPasswordField1.invalid,
+                     'is-invalid': loginPasswordField1.invalid && (loginPasswordField1.dirty || loginPasswordField1.touched)
+                   }"
+                   [(ngModel)]="loginPassword1"
+                   required>
+            <div class="invalid-feedback">
+              Your password should be at least 12 characters long, and include:
+              <ul>
+                <li>at least 2 lowercase characters,</li>
+                <li>at least 2 uppercase characters,</li>
+                <li>at least 2 numbers,</li>
+                <li>at least 2 special symbols.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password-2">Your login password's confirmation</label>
+            <input type="password"
+                   id="login-password-2"
+                   class="form-control"
+                   name="login-password-2"
+                   [ngClass]="{
+                     'is-valid': loginPassword2.length > 0 && loginPasswordsMatch,
+                     'is-invalid': loginPassword2.length > 0 && !loginPasswordsMatch
+                   }"
+                   [(ngModel)]="loginPassword2"
+                   required>
+            <div class="invalid-feedback" [hidden]="!(loginPassword2.length > 0 && !loginPasswordsMatch)">
+              Your passwords do not match.
+            </div>
+          </div>
+
+          <p class="text-right">
+            <a routerLink="/login" class="btn btn-xs btn-link">Back to login</a><button type="submit" class="btn btn-primary" [disabled]="!allFieldsValid">Register</button>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
