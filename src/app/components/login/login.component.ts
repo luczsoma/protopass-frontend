@@ -32,8 +32,7 @@ export class LoginComponent {
     } catch (e) {
       this.loginError = true;
     } finally {
-      this.email = '';
-      this.email = '';
+      this.password = '';
     }
   }
 
