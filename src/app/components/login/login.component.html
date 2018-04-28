@@ -1,0 +1,40 @@
+<div class="container">
+  <div class="jumbotron">
+    <div class="row">
+      <div class="col-md">
+        <img src="/assets/images/protopass-logo.png" alt="Protopass logo" id="logo-big">
+        <p class="lead">Online, browser-based, end-to-end encrypted password manager.</p>
+      </div>
+      <div class="col-md">
+        <div [hidden]="!loginError" class="alert alert-danger">We could not log you in. Please review your credentials.</div>
+
+        <form (submit)="login()">
+          <div class="form-group">
+            <input type="email"
+                   class="form-control"
+                   placeholder="john@protonmail.com"
+                   name="email"
+                   [(ngModel)]="email">
+          </div>
+
+          <div class="form-group">
+            <input type="password"
+                   class="form-control"
+                   placeholder="9zSALS;vuY}=`0`XnF!K\9v<Tv9%A($_"
+                   [(ngModel)]="password"
+                   name="password"
+                   required>
+          </div>
+
+          <p class="text-right">
+            <a routerLink="/register">Register</a>&nbsp;or&nbsp;&nbsp;<button type="submit" class="btn btn-primary">Log in</button>
+          </p>
+        </form>
+
+        <p class="text-right">
+          <small><a routerLink="/password-reset">Forgot your password?</a></small>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
