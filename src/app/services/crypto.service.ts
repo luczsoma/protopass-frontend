@@ -45,14 +45,14 @@ export class CryptoService {
     });
   }
 
-  private async deriveSrpPrivateKey(email: string, password: string, salt: Uint8Array): Promise<string> {
+  public async deriveSrpPrivateKey(email: string, password: string, saltBytes: Uint8Array): Promise<string> {
     const key: Uint8Array = Utf8.encode(`${email}:${password}`);
-    const derivedKey: Uint8Array = await this.scrypt(key, salt);
+    const derivedKey: Uint8Array = await this.scrypt(key, saltBytes);
     return Convert.bytesToHex(derivedKey);
   }
 
-  public async generateSrpVerifier(email: string, password: string, salt: Uint8Array): Promise<string> {
-    const privateKey: string = await this.deriveSrpPrivateKey(email, password, salt);
+  public async generateSrpVerifier(email: string, password: string, saltBytes: Uint8Array): Promise<string> {
+    const privateKey: string = await this.deriveSrpPrivateKey(email, password, saltBytes);
     return srp.deriveVerifier(privateKey);
   }
 

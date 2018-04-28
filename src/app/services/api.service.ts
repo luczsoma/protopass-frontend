@@ -71,8 +71,8 @@ export class ApiService {
   }
 
   public async challenge(email: string, clientChallenge: string): Promise<{
-    salt: string,
-    serverChallenge: string,
+    salt: string;
+    serverChallenge: string;
   }> {
     const endpointName: USVString = 'challenge';
     const queryParams: Map<string, any> = new Map<string, any>([]);
@@ -90,9 +90,8 @@ export class ApiService {
   }
 
   public async authenticate(email: string, clientProof: string): Promise<{
-    salt: string,
-    serverProof: string,
-    sessionId: string,
+    serverProof: string;
+    sessionId: string;
   }> {
     const endpointName: USVString = 'authenticate';
     const queryParams: Map<string, any> = new Map<string, any>([]);
@@ -104,9 +103,8 @@ export class ApiService {
     const headers: Map<string, string> = new Map<string, string>();
 
     return await this.call<{
-      salt: string,
-      serverProof: string,
-      sessionId: string,
+      serverProof: string;
+      sessionId: string;
     }>(endpointName, queryParams, method, body, headers);
   }
 
@@ -123,9 +121,9 @@ export class ApiService {
   }
 
   public async downloadUserProfile(sessionId: string): Promise<{
-    encryptedUserProfile: string,
-    containerKeySalt: string,
-    initializationVector: string,
+    encryptedUserProfile: string;
+    containerKeySalt: string;
+    initializationVector: string;
   }> {
     const endpointName: USVString = 'downloadUserProfile';
     const queryParams: Map<string, any> = new Map<string, any>([]);
@@ -164,7 +162,7 @@ export class ApiService {
   }
 
   public async getStorageKey(forceFresh: boolean, sessionId: string): Promise<{
-    containerPasswordStorageKey: string,
+    containerPasswordStorageKey: string;
   }> {
     const endpointName: USVString = 'getStorageKey';
     const queryParams: Map<string, any> = new Map<string, any>([]);
