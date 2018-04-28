@@ -57,7 +57,7 @@ popd
 # 3. Building the Angular application
 echo "Building the Angular application"
 pushd ${DEPLOYMENT_TEMP}
-node ng build --target=production
+ng build --target=production
 exitWithMessageOnError "build failed"
 popd
 
