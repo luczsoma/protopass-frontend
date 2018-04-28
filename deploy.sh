@@ -26,7 +26,7 @@ DEPLOYMENT_TARGET="$SCRIPT_DIR/../wwwroot"
 
 # Install kudu sync
 echo Installing Kudu Sync
-npm install kudusync -g --silent
+eval npm install kudusync -g --silent
 exitWithMessageOnError "kudusync install failed"
 
 ##################################################################################################################################
@@ -45,7 +45,7 @@ exitWithMessageOnError "Repository could not be copied to temp"
 # 2. Installing dependencies
 echo "Installing dependencies"
 pushd "$DEPLOYMENT_TEMP"
-npm install
+eval npm install
 exitWithMessageOnError "npm failed"
 popd
 
