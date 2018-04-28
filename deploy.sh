@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# ----------------------
-# KUDU Deployment Script
-# Version: 1.0.17
-# ----------------------
-
-# Helpers
-# -------
-
 exitWithMessageOnError () {
   if [ ! $? -eq 0 ]; then
     echo "An error has occurred during web site deployment."
@@ -28,26 +20,11 @@ exitWithMessageOnError "Missing node.js executable, please install node.js, if a
 
 SCRIPT_DIR="${BASH_SOURCE[0]%\\*}"
 SCRIPT_DIR="${SCRIPT_DIR%/*}"
-ARTIFACTS=$SCRIPT_DIR/../artifacts
 KUDU_SYNC_CMD=${KUDU_SYNC_CMD//\"}
 
-if [[ ! -n "$DEPLOYMENT_SOURCE" ]]; then
-  DEPLOYMENT_SOURCE=$SCRIPT_DIR
-fi
-
-if [[ ! -n "$NEXT_MANIFEST_PATH" ]]; then
-  NEXT_MANIFEST_PATH=$ARTIFACTS/manifest
-
-  if [[ ! -n "$PREVIOUS_MANIFEST_PATH" ]]; then
-    PREVIOUS_MANIFEST_PATH=$NEXT_MANIFEST_PATH
-  fi
-fi
-
-if [[ ! -n "$DEPLOYMENT_TARGET" ]]; then
-  DEPLOYMENT_TARGET=$ARTIFACTS/wwwroot
-else
-  KUDU_SERVICE=true
-fi
+DEPLOYMENT_SOURCE=$SCRIPT_DIR
+DEPLOYMENT_TEMP="$SCRIPT_DIR/../temp"
+DEPLOYMENT_TARGET="$SCRIPT_DIR/../wwwroot"
 
 if [[ ! -n "$KUDU_SYNC_CMD" ]]; then
   # Install kudu sync
@@ -55,69 +32,41 @@ if [[ ! -n "$KUDU_SYNC_CMD" ]]; then
   npm install kudusync -g --silent
   exitWithMessageOnError "npm failed"
 
-  if [[ ! -n "$KUDU_SERVICE" ]]; then
-    # In case we are running locally this is the correct location of kuduSync
-    KUDU_SYNC_CMD=kuduSync
-  else
-    # In case we are running on kudu service this is the correct location of kuduSync
-    KUDU_SYNC_CMD=$APPDATA/npm/node_modules/kuduSync/bin/kuduSync
-  fi
+  # In case we are running on kudu service this is the correct location of kuduSync
+  KUDU_SYNC_CMD=$APPDATA/npm/node_modules/kuduSync/bin/kuduSync
 fi
-
-# Node Helpers
-# ------------
-
-selectNodeVersion () {
-  if [[ -n "$KUDU_SELECT_NODE_VERSION_CMD" ]]; then
-    SELECT_NODE_VERSION="$KUDU_SELECT_NODE_VERSION_CMD \"$DEPLOYMENT_SOURCE\" \"$DEPLOYMENT_TARGET\" \"$DEPLOYMENT_TEMP\""
-    eval $SELECT_NODE_VERSION
-    exitWithMessageOnError "select node version failed"
-
-    if [[ -e "$DEPLOYMENT_TEMP/__nodeVersion.tmp" ]]; then
-      NODE_EXE=`cat "$DEPLOYMENT_TEMP/__nodeVersion.tmp"`
-      exitWithMessageOnError "getting node version failed"
-    fi
-    
-    if [[ -e "$DEPLOYMENT_TEMP/__npmVersion.tmp" ]]; then
-      NPM_JS_PATH=`cat "$DEPLOYMENT_TEMP/__npmVersion.tmp"`
-      exitWithMessageOnError "getting npm version failed"
-    fi
-
-    if [[ ! -n "$NODE_EXE" ]]; then
-      NODE_EXE=node
-    fi
-
-    NPM_CMD="\"$NODE_EXE\" \"$NPM_JS_PATH\""
-  else
-    NPM_CMD=npm
-    NODE_EXE=node
-  fi
-}
 
 ##################################################################################################################################
 # Deployment
 # ----------
 
-echo Handling node.js deployment.
-echo `pwd`
+echo "Handling Angular deployment."
 
-# 1. KuduSync
-if [[ "$IN_PLACE_DEPLOYMENT" -ne "1" ]]; then
-  "$KUDU_SYNC_CMD" -v 50 -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TARGET" -n "$NEXT_MANIFEST_PATH" -p "$PREVIOUS_MANIFEST_PATH" -i ".git;.hg;.deployment;deploy.sh"
-  exitWithMessageOnError "Kudu Sync failed"
-fi
+# 1. Copying the repository to temp
+echo "Copying the repository to temp"
+rm -rf ${DEPLOYMENT_TEMP}
+mkdir ${DEPLOYMENT_TEMP}
+"$KUDU_SYNC_CMD" -v -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TEMP" -i ".git;.deployment;deploy.sh"
+exitWithMessageOnError "Repository could not be copied to temp"
 
-# 2. Select node version
-selectNodeVersion
+# 2. Installing dependencies
+echo "Installing dependencies"
+pushd "$DEPLOYMENT_TEMP"
+npm install
+exitWithMessageOnError "npm failed"
+popd
 
-# 3. Install npm packages
-if [ -e "$DEPLOYMENT_TARGET/package.json" ]; then
-  cd "$DEPLOYMENT_TARGET"
-  echo "Running $NPM_CMD install --production"
-  eval $NPM_CMD install --production
-  exitWithMessageOnError "npm failed"
-  cd - > /dev/null
-fi
+# 3. Building the Angular application
+echo "Building the Angular application"
+pushd ${DEPLOYMENT_TEMP}
+node ./node_modules/.bin/ng build --target=production
+exitWithMessageOnError "build failed"
+popd
+
+# 4. Copying the contents of temp/dist to /wwwroot
+"$KUDU_SYNC_CMD" -v -f "$DEPLOYMENT_TEMP"/dist -t "$DEPLOYMENT_TARGET"
+exitWithMessageOnError "Copying to /wwwroot failed."
+
 
 ##################################################################################################################################
 echo "Finished successfully."
