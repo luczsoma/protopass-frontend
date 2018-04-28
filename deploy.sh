@@ -29,6 +29,11 @@ echo Installing Kudu Sync
 npm.cmd install kudusync -g --silent
 exitWithMessageOnError "kudusync install failed"
 
+# Install Angular CLI
+echo Installing Angular CLI
+npm.cmd install @angular/cli -g --silent
+exitWithMessageOnError "Angular CLI install failed"
+
 ##################################################################################################################################
 # Deployment
 # ----------
@@ -52,7 +57,7 @@ popd
 # 3. Building the Angular application
 echo "Building the Angular application"
 pushd ${DEPLOYMENT_TEMP}
-node ./node_modules/.bin/ng build --target=production
+node ng build --target=production
 exitWithMessageOnError "build failed"
 popd
 
