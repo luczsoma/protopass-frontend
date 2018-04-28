@@ -99,6 +99,7 @@ selectNodeVersion () {
 # ----------
 
 echo Handling node.js deployment.
+echo `pwd`
 
 # 1. KuduSync
 if [[ "$IN_PLACE_DEPLOYMENT" -ne "1" ]]; then
