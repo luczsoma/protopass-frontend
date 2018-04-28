@@ -18,23 +18,16 @@ exitWithMessageOnError "Missing node.js executable, please install node.js, if a
 # Setup
 # -----
 
-SCRIPT_DIR="${BASH_SOURCE[0]%\\*}"
-SCRIPT_DIR="${SCRIPT_DIR%/*}"
-KUDU_SYNC_CMD=${KUDU_SYNC_CMD//\"}
+SCRIPT_DIR=`pwd`
 
 DEPLOYMENT_SOURCE=$SCRIPT_DIR
 DEPLOYMENT_TEMP="$SCRIPT_DIR/../temp"
 DEPLOYMENT_TARGET="$SCRIPT_DIR/../wwwroot"
 
-if [[ ! -n "$KUDU_SYNC_CMD" ]]; then
-  # Install kudu sync
-  echo Installing Kudu Sync
-  npm install kudusync -g --silent
-  exitWithMessageOnError "npm failed"
-
-  # In case we are running on kudu service this is the correct location of kuduSync
-  KUDU_SYNC_CMD=$APPDATA/npm/node_modules/kuduSync/bin/kuduSync
-fi
+# Install kudu sync
+echo Installing Kudu Sync
+npm install kudusync -g --silent
+exitWithMessageOnError "kudusync install failed"
 
 ##################################################################################################################################
 # Deployment
@@ -46,7 +39,7 @@ echo "Handling Angular deployment."
 echo "Copying the repository to temp"
 rm -rf ${DEPLOYMENT_TEMP}
 mkdir ${DEPLOYMENT_TEMP}
-"$KUDU_SYNC_CMD" -v -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TEMP" -i ".git;.deployment;deploy.sh"
+kudusync -v -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TEMP" -i ".git;.deployment;deploy.sh"
 exitWithMessageOnError "Repository could not be copied to temp"
 
 # 2. Installing dependencies
@@ -64,7 +57,7 @@ exitWithMessageOnError "build failed"
 popd
 
 # 4. Copying the contents of temp/dist to /wwwroot
-"$KUDU_SYNC_CMD" -v -f "$DEPLOYMENT_TEMP"/dist -t "$DEPLOYMENT_TARGET"
+kudusync -v -f "$DEPLOYMENT_TEMP"/dist -t "$DEPLOYMENT_TARGET"
 exitWithMessageOnError "Copying to /wwwroot failed."
 
 
