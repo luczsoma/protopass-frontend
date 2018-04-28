@@ -39,7 +39,7 @@ echo "Handling Angular deployment."
 echo "Copying the repository to temp"
 rm -rf ${DEPLOYMENT_TEMP}
 mkdir ${DEPLOYMENT_TEMP}
-kudusync -v -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TEMP" -i ".git;.deployment;deploy.sh"
+kudusync -v 50 -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TEMP" -i ".git;.deployment;deploy.sh"
 exitWithMessageOnError "Repository could not be copied to temp"
 
 # 2. Installing dependencies
@@ -57,7 +57,7 @@ exitWithMessageOnError "build failed"
 popd
 
 # 4. Copying the contents of temp/dist to /wwwroot
-kudusync -v -f "$DEPLOYMENT_TEMP"/dist -t "$DEPLOYMENT_TARGET"
+kudusync -v 50 -f "$DEPLOYMENT_TEMP"/dist -t "$DEPLOYMENT_TARGET"
 exitWithMessageOnError "Copying to /wwwroot failed."
 
 
