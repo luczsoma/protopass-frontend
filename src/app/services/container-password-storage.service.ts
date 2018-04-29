@@ -4,6 +4,7 @@ import { SessionService } from './session.service';
 import { Convert } from '../utils/convert';
 import { CryptoService } from './crypto.service';
 import { Utf8 } from '../utils/utf8';
+import { UtilsService } from './utils.service';
 
 @Injectable()
 export class ContainerPasswordStorageService {
@@ -16,14 +17,15 @@ export class ContainerPasswordStorageService {
     private api: ApiService,
     private sessionService: SessionService,
     private cryptoService: CryptoService,
+    private utilsService: UtilsService,
   ) { }
 
-  private throwContainerPasswordInputRequired(): never {
+  private resetAndThrow(): never {
     this.encryptedContainerPassword = undefined;
     this.salt = undefined;
     this.iv = undefined;
 
-    throw { errorCode: 'ContainerPasswordInputRequired' };
+    return this.utilsService.throwContainerPasswordInputRequired();
   }
 
   private async getContainerPasswordStorageKey(forceFresh = false): Promise<Uint8Array> {
@@ -47,7 +49,7 @@ export class ContainerPasswordStorageService {
 
   public async getContainerPassword(): Promise<string> {
     if (!this.encryptedContainerPassword || !this.salt || !this.iv) {
-      return this.throwContainerPasswordInputRequired();
+      return this.resetAndThrow();
     }
 
     const storageKey: Uint8Array = await this.getContainerPasswordStorageKey();
@@ -58,7 +60,7 @@ export class ContainerPasswordStorageService {
         derivedKey, this.iv);
       return Utf8.decode(containerPasswordBytes);
     } catch (e) {
-      return this.throwContainerPasswordInputRequired();
+      return this.resetAndThrow();
     }
   }
 

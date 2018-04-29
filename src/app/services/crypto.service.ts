@@ -9,7 +9,7 @@ export class CryptoService {
   public static readonly lower: string = 'abcdefghijklmnopqrstuvwxyz';
   public static readonly upper: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   public static readonly number: string = '0123456789';
-  public static readonly symbol: string = ' !"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~';
+  public static readonly symbol: string = '!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~';
 
   private static readonly AES_GCM_TAG_LENGTH_BYTES: number = 16;
 
@@ -63,7 +63,7 @@ export class CryptoService {
       iv: ivBytes,
       tagLength: CryptoService.AES_GCM_TAG_LENGTH_BYTES * 8,
     };
-    const key: CryptoKey = await crypto.subtle.importKey('ray', keyBytes, 'AES-GCM', false, ['encrypt']);
+    const key: CryptoKey = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['encrypt']);
 
     return new Uint8Array(await crypto.subtle.encrypt(algorithm, key, dataBytes));
   }

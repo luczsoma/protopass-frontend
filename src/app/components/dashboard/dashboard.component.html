@@ -1,4 +1,5 @@
 <div class="container">
+
   <div *ngIf="containerPasswordInputNeeded">
     <div class="jumbotron">
       <div class="row">
@@ -9,52 +10,160 @@
             <p>This password is responsible for the client-side encryption of your passwords stored in the
               application. If you forget this, it can only be reset with losing access to all your passwords.
               Keep it safe and do not forget it. Never. Ever.</p>
+            <div class="form-inline" (submit)="containerPasswordInputSubmit()">
+              <div class="form-group">
+                <input type="password"
+                       id="container-password"
+                       class="form-control"
+                       name="container-password"
+                       #containerPasswordField="ngModel"
+                       appValidatePasswordStrengthOnInput
+                       [ngClass]="{
+                         'is-valid': !containerPasswordField.invalid,
+                         'is-invalid': containerPasswordField.invalid && (containerPasswordField.dirty || containerPasswordField.touched)
+                       }"
+                       [(ngModel)]="containerPasswordInput"
+                       required>
+                <div class="invalid-feedback">
+                  Your password should be at least 12 characters long, and include:
+                  <ul>
+                    <li>at least 2 lowercase characters,</li>
+                    <li>at least 2 uppercase characters,</li>
+                    <li>at least 2 numbers,</li>
+                    <li>at least 2 special symbols.</li>
+                  </ul>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
           </div>
 
           <div *ngIf="!initialUserProfileSetup">
             <p class="lead">Enter your profile password</p>
             <p>Every 10 minutes, you have to enter your container password again. This is to ensure the maximum
               security is achieved.</p>
+            <form class="form-inline" (submit)="containerPasswordInputSubmit()">
+              <div class="form-group">
+                <input type="password"
+                       class="form-control"
+                       [(ngModel)]="containerPasswordInput">
+              </div>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
           </div>
-
-          <form class="form-inline" (submit)="containerPasswordInputSubmit()">
-            <div class="form-group">
-              <input type="password"
-                     class="form-control"
-                     [(ngModel)]="containerPasswordInput">
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </form>
         </div>
       </div>
     </div>
   </div>
-  <div *ngIf="!containerPasswordInputNeeded">
-    <h1>Your passwords</h1>
 
-    <table class="table table-hover">
-      <tr>
-        <th>Service name</th>
-        <th>Password</th>
-        <th>Show?</th>
-        <th>Delete?</th>
-      </tr>
-      <tr *ngFor="let passwordEntry of passwordEntries">
-        <td>{{ passwordEntry[0] }}</td>
-        <td>{{ passwordEntry[1] }}</td>
-        <td>
-          <button class="btn btn-success btn-xs"
-                  (click)="getPasswordOfKey(passwordEntry[0])"
-                  [disabled]="userProfileLocked">SHOW PASSWORD
-          </button>
-        </td>
-        <td>
-          <button class="btn btn-danger btn-xs"
-                  (click)="deletePasswordOfKey(passwordEntry[0])"
-                  [disabled]="userProfileLocked">DELETE
-          </button>
-        </td>
-      </tr>
-    </table>
+  <div *ngIf="!containerPasswordInputNeeded">
+    <div class="card">
+      <h5 class="card-header">Your end-to-end encrypted password storage</h5>
+      <div class="card-body">
+        <h5>Add new password</h5>
+        <form (submit)="addNewPassword()">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="new-password-key">Service name</label>
+                <input type="text"
+                       class="form-control"
+                       id="new-password-key"
+                       placeholder="e.g. Facebook"
+                       [(ngModel)]="newPasswordKey">
+              </div>
+              <div class="form-group">
+                <label for="new-password-value">Password</label>
+                <input type="text"
+                       class="form-control"
+                       id="new-password-value"
+                       [(ngModel)]="newPasswordValue">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <h6>Generate password</h6>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="lower" [(ngModel)]="generatedPasswordLower">
+                <label class="form-check-label" for="lower">
+                  Lowercase letters (a-z)
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="upper" [(ngModel)]="generatedPasswordUpper">
+                <label class="form-check-label" for="upper">
+                  Uppercase letters (A-Z)
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="number" [(ngModel)]="generatedPasswordNumber">
+                <label class="form-check-label" for="number">
+                  Numbers (0-9)
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="symbol" [(ngModel)]="generatedPasswordSymbol">
+                <label class="form-check-label" for="symbol">
+                  Symbols (!"#$%&'()*+,-./:;<=>?@[]^_`{|}~)
+                </label>
+              </div>
+
+              <div class="form-group">
+                <div class="col-sm-3">
+                  <label for="length">Length</label>
+                  <input type="text"
+                         class="form-control"
+                         id="length"
+                         placeholder="The longer the better…"
+                         [(ngModel)]="generatedPasswordLength">
+                </div>
+              </div>
+
+              <p>
+                <button class="btn btn-sm btn-primary"
+                        (click)="generateRandomPassword()"
+                        [disabled]="userProfileLocked">Generate</button>
+              </p>
+            </div>
+          </div>
+
+        </form>
+      </div>
+      <div class="card-body">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Service name</th>
+              <th>Password</th>
+              <th>Show</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let passwordEntry of passwordEntries">
+              <td>{{ passwordEntry[0] }}</td>
+              <td>{{ passwordEntry[1] }}</td>
+              <td>
+                <button class="btn btn-success btn-xs"
+                        (click)="getPasswordOfKey(passwordEntry[0])"
+                        [disabled]="userProfileLocked">SHOW PASSWORD
+                </button>
+              </td>
+              <td>
+                <button class="btn btn-danger btn-xs"
+                        (click)="deletePasswordOfKey(passwordEntry[0])"
+                        [disabled]="userProfileLocked">DELETE
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
+
 </div>

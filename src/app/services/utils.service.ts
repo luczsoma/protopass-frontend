@@ -22,4 +22,8 @@ export class UtilsService {
     return lengthCheck && lowerCheck && upperCheck && numberCheck && symbolCheck;
   }
 
+  public throwContainerPasswordInputRequired(): never {
+    throw { errorCode: 'ContainerPasswordInputRequired' };
+  }
+
 }

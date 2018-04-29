@@ -8,7 +8,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { NewPasswordComponent } from './components/new-password/new-password.component';
 import { LoginComponent } from './components/login/login.component';
 import { SessionService } from './services/session.service';
 import { AuthGuard } from './guards/auth.guard';
@@ -19,7 +18,7 @@ import { UtilsService } from './services/utils.service';
 import { ValidatePasswordStrengthOnInputDirective } from './directives/validate-password-strength-on-input.directive';
 import { CryptoService } from './services/crypto.service';
 import { ValidateComponent } from './components/validate/validate.component';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AlertModule } from 'ngx-alerts';
 import { ApiService } from './services/api.service';
 import { UserProfileService } from './services/user-profile.service';
@@ -31,7 +30,6 @@ import { ContainerPasswordStorageService } from './services/container-password-s
     AppComponent,
     NavbarComponent,
     DashboardComponent,
-    NewPasswordComponent,
     LoginComponent,
     RegisterComponent,
     ValidateEmailOnInputDirective,

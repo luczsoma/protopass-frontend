@@ -4,6 +4,7 @@ import { SessionService } from './session.service';
 import { ContainerPasswordStorageService } from './container-password-storage.service';
 import { Convert } from '../utils/convert';
 import { CryptoService } from './crypto.service';
+import { UtilsService } from './utils.service';
 
 @Injectable()
 export class UserProfileService {
@@ -18,6 +19,7 @@ export class UserProfileService {
     private containerPasswordStorageService: ContainerPasswordStorageService,
     private api: ApiService,
     private cryptoService: CryptoService,
+    private utilsService: UtilsService,
   ) { }
 
   private async decryptUserProfile(userProfileResponse: {
@@ -25,17 +27,21 @@ export class UserProfileService {
     containerKeySalt: string;
     initializationVector: string;
   }, containerPassword: string): Promise<{ PasswordEntries: { [key: string]: string } }> {
-    const containerPasswordBytes: Uint8Array = Convert.stringToBytes(containerPassword);
-    const saltBytes: Uint8Array = Convert.base64ToBytes(userProfileResponse.containerKeySalt);
-    const derivedKey: Uint8Array = await this.cryptoService.scrypt(containerPasswordBytes, saltBytes);
+    try {
+      const containerPasswordBytes: Uint8Array = Convert.stringToBytes(containerPassword);
+      const saltBytes: Uint8Array = Convert.base64ToBytes(userProfileResponse.containerKeySalt);
+      const derivedKey: Uint8Array = await this.cryptoService.scrypt(containerPasswordBytes, saltBytes);
 
-    const ivBytes: Uint8Array = Convert.base64ToBytes(userProfileResponse.initializationVector);
+      const ivBytes: Uint8Array = Convert.base64ToBytes(userProfileResponse.initializationVector);
 
-    const asBytes: Uint8Array = Convert.base64ToBytes(userProfileResponse.encryptedUserProfile);
-    const decrypted: Uint8Array = await this.cryptoService.decryptAesGcm(asBytes, derivedKey, ivBytes);
-    const asString: string = Convert.bytesToString(decrypted);
+      const asBytes: Uint8Array = Convert.base64ToBytes(userProfileResponse.encryptedUserProfile);
+      const decrypted: Uint8Array = await this.cryptoService.decryptAesGcm(asBytes, derivedKey, ivBytes);
+      const asString: string = Convert.bytesToString(decrypted);
 
-    return JSON.parse(asString);
+      return JSON.parse(asString);
+    } catch (e) {
+      return this.utilsService.throwContainerPasswordInputRequired();
+    }
   }
 
   private async encryptUserProfile(userProfile: {
@@ -62,12 +68,21 @@ export class UserProfileService {
     };
   }
 
-  public async initializeEmptyUserProfile(): Promise<void> {
-    while (this._locked) {}
+  private async mutexCall(fn: () => any) {
+    if (this._locked) {
+      throw { errorCode: 'ConcurrentCallNotAllowed' };
+    }
 
     try {
       this._locked = true;
+      return await fn();
+    } finally {
+      this._locked = false;
+    }
+  }
 
+  public async initializeEmptyUserProfile(): Promise<void> {
+    return await this.mutexCall(async () => {
       const containerPassword = await this.containerPasswordStorageService.getContainerPassword();
       const userProfile = { PasswordEntries: {} };
       const encryptedWithSaltAndIv = await this.encryptUserProfile(userProfile, containerPassword);
@@ -78,56 +93,42 @@ export class UserProfileService {
         Convert.bytesToBase64(encryptedWithSaltAndIv.initializationVector),
         this.sessionService.sessionId!,
       );
-    } finally {
-      this._locked = false;
-    }
+    });
   }
 
   public async getPasswordEntryKeysList(): Promise<string[]> {
-    while (this._locked) {}
-
-    try {
-      this._locked = true;
-
+    return await this.mutexCall(async () => {
       const userProfileResponse = await this.api.downloadUserProfile(this.sessionService.sessionId!);
       const containerPassword = await this.containerPasswordStorageService.getContainerPassword();
 
       const userProfile = await this.decryptUserProfile(userProfileResponse, containerPassword);
 
       return Object.keys(userProfile.PasswordEntries).sort((a: string, b: string) => a.localeCompare(b));
-    } finally {
-      this._locked = false;
-    }
-
+    });
   }
 
   public async getPasswordOfKey(key: string): Promise<string> {
-    while (this._locked) {}
-
-    try {
-      this._locked = true;
-
+    return await this.mutexCall(async () => {
       const userProfileResponse = await this.api.downloadUserProfile(this.sessionService.sessionId!);
       const containerPassword = await this.containerPasswordStorageService.getContainerPassword();
 
       const userProfile = await this.decryptUserProfile(userProfileResponse, containerPassword);
 
       return userProfile.PasswordEntries[key];
-    } finally {
-      this._locked = false;
-    }
+    });
   }
 
-  public async updatePasswordOfKey(key: string, password: string): Promise<void> {
-    while (this._locked) {}
-
-    try {
-      this._locked = true;
-
+  public async storePasswordOfKey(key: string, password: string): Promise<void> {
+    return await this.mutexCall(async () => {
       const userProfileResponse = await this.api.downloadUserProfile(this.sessionService.sessionId!);
       const containerPassword = await this.containerPasswordStorageService.getContainerPassword();
 
       const userProfile = await this.decryptUserProfile(userProfileResponse, containerPassword);
+
+      if (userProfile.PasswordEntries[key]) {
+        throw { errorCode: 'KeyExists' };
+      }
+
       userProfile.PasswordEntries[key] = password;
       const encryptedWithSaltAndIv = await this.encryptUserProfile(userProfile, containerPassword);
 
@@ -137,17 +138,11 @@ export class UserProfileService {
         Convert.bytesToBase64(encryptedWithSaltAndIv.initializationVector),
         this.sessionService.sessionId!,
       );
-    } finally {
-      this._locked = false;
-    }
+    });
   }
 
   public async deletePasswordOfKey(key: string): Promise<void> {
-    while (this._locked) {}
-
-    try {
-      this._locked = true;
-
+    return await this.mutexCall(async () => {
       const userProfileResponse = await this.api.downloadUserProfile(this.sessionService.sessionId!);
       const containerPassword = await this.containerPasswordStorageService.getContainerPassword();
 
@@ -161,9 +156,7 @@ export class UserProfileService {
         Convert.bytesToBase64(encryptedWithSaltAndIv.initializationVector),
         this.sessionService.sessionId!,
       );
-    } finally {
-      this._locked = false;
-    }
+    });
   }
 
 }
