@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as srp from 'secure-remote-password/client';
 import * as scrypt from 'scrypt-async';
-import { Utf8 } from '../utils/utf8';
 import { Convert } from '../utils/convert';
 
 @Injectable()
@@ -11,6 +10,8 @@ export class CryptoService {
   public static readonly upper: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   public static readonly number: string = '0123456789';
   public static readonly symbol: string = ' !"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~';
+
+  private static readonly AES_GCM_TAG_LENGTH_BYTES: number = 16;
 
   public cryptoRandomBytes(bytesCount: number): Uint8Array {
     const bytes = new Uint8Array(bytesCount);
@@ -46,7 +47,7 @@ export class CryptoService {
   }
 
   public async deriveSrpPrivateKey(email: string, password: string, saltBytes: Uint8Array): Promise<string> {
-    const key: Uint8Array = Utf8.encode(`${email}:${password}`);
+    const key: Uint8Array = Convert.stringToBytes(`${email}:${password}`);
     const derivedKey: Uint8Array = await this.scrypt(key, saltBytes);
     return Convert.bytesToHex(derivedKey);
   }
@@ -54,6 +55,28 @@ export class CryptoService {
   public async generateSrpVerifier(email: string, password: string, saltBytes: Uint8Array): Promise<string> {
     const privateKey: string = await this.deriveSrpPrivateKey(email, password, saltBytes);
     return srp.deriveVerifier(privateKey);
+  }
+
+  public async encryptAesGcm(dataBytes: Uint8Array, keyBytes: Uint8Array, ivBytes: Uint8Array): Promise<Uint8Array> {
+    const algorithm: AesGcmParams = {
+      name: 'AES-GCM',
+      iv: ivBytes,
+      tagLength: CryptoService.AES_GCM_TAG_LENGTH_BYTES * 8,
+    };
+    const key: CryptoKey = await crypto.subtle.importKey('ray', keyBytes, 'AES-GCM', false, ['encrypt']);
+
+    return new Uint8Array(await crypto.subtle.encrypt(algorithm, key, dataBytes));
+  }
+
+  public async decryptAesGcm(dataBytes: Uint8Array, keyBytes: Uint8Array, ivBytes: Uint8Array): Promise<Uint8Array> {
+    const algorithm: AesGcmParams = {
+      name: 'AES-GCM',
+      iv: ivBytes,
+      tagLength: CryptoService.AES_GCM_TAG_LENGTH_BYTES * 8,
+    };
+    const key: CryptoKey = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
+
+    return new Uint8Array(await crypto.subtle.decrypt(algorithm, key, dataBytes));
   }
 
 }

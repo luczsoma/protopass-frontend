@@ -13,7 +13,7 @@ export class AppComponent {
   ) {}
 
   get loggedIn() {
-    return this.sessionService.isLoggedIn();
+    return this.sessionService.sessionId;
   }
 
 }

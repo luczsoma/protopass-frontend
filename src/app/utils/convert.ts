@@ -66,7 +66,7 @@ export class Convert {
   }
 
   public static stringToBytes(str: string): Uint8Array {
-    if (str === '') return new Uint8Array([]);
+    if (str === '') { return new Uint8Array([]); }
     return Utf8.encode(str);
   }
 

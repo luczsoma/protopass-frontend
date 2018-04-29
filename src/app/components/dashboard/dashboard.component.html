@@ -1,3 +1,60 @@
-<p>
-  dashboard works!
-</p>
+<div class="container">
+  <div *ngIf="containerPasswordInputNeeded">
+    <div class="jumbotron">
+      <div class="row">
+        <div class="col-sm">
+          <img src="/assets/images/protopass-favicon.png" id="password-required-lock" alt="Locked">
+          <div *ngIf="initialUserProfileSetup">
+            <p class="lead">Set up your profile password</p>
+            <p>This password is responsible for the client-side encryption of your passwords stored in the
+              application. If you forget this, it can only be reset with losing access to all your passwords.
+              Keep it safe and do not forget it. Never. Ever.</p>
+          </div>
+
+          <div *ngIf="!initialUserProfileSetup">
+            <p class="lead">Enter your profile password</p>
+            <p>Every 10 minutes, you have to enter your container password again. This is to ensure the maximum
+              security is achieved.</p>
+          </div>
+
+          <form class="form-inline" (submit)="containerPasswordInputSubmit()">
+            <div class="form-group">
+              <input type="password"
+                     class="form-control"
+                     [(ngModel)]="containerPasswordInput">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="!containerPasswordInputNeeded">
+    <h1>Your passwords</h1>
+
+    <table class="table table-hover">
+      <tr>
+        <th>Service name</th>
+        <th>Password</th>
+        <th>Show?</th>
+        <th>Delete?</th>
+      </tr>
+      <tr *ngFor="let passwordEntry of passwordEntries">
+        <td>{{ passwordEntry[0] }}</td>
+        <td>{{ passwordEntry[1] }}</td>
+        <td>
+          <button class="btn btn-success btn-xs"
+                  (click)="getPasswordOfKey(passwordEntry[0])"
+                  [disabled]="userProfileLocked">SHOW PASSWORD
+          </button>
+        </td>
+        <td>
+          <button class="btn btn-danger btn-xs"
+                  (click)="deletePasswordOfKey(passwordEntry[0])"
+                  [disabled]="userProfileLocked">DELETE
+          </button>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

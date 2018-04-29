@@ -57,8 +57,8 @@ export class SessionService {
 
   async logout(): Promise<void> {
     try {
-      if (this.sessionId) {
-        await this.api.logout(this.sessionId);
+      if (this.isLoggedIn()) {
+        await this.api.logout(this.sessionId!);
       }
     } catch (e) {
       // do not handle, the sessionId will be cleared anyways

@@ -22,6 +22,8 @@ import { ValidateComponent } from './components/validate/validate.component';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { AlertModule } from 'ngx-alerts';
 import { ApiService } from './services/api.service';
+import { UserProfileService } from './services/user-profile.service';
+import { ContainerPasswordStorageService } from './services/container-password-storage.service';
 
 
 @NgModule({
@@ -50,6 +52,8 @@ import { ApiService } from './services/api.service';
     { provide: AuthGuard, useClass: AuthGuard },
     { provide: CryptoService, useClass: CryptoService },
     { provide: ApiService, useClass: ApiService },
+    { provide: UserProfileService, useClass: UserProfileService },
+    { provide: ContainerPasswordStorageService, useClass: ContainerPasswordStorageService },
   ],
   bootstrap: [ AppComponent ]
 })

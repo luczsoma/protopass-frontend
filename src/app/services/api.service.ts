@@ -32,7 +32,7 @@ export class ApiService {
       return await response.json();
     } else {
       const errorResponse = await response.json();
-      throw new ServerApiError(errorResponse.httpStatusCode, errorResponse.endpointUri, errorResponse.errorCode);
+      throw new ServerApiError(endpointName, errorResponse.error);
     }
   }
 
