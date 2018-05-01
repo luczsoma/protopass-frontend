@@ -6,14 +6,16 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AuthGuard } from './guards/auth.guard';
 import { RegisterComponent } from './components/register/register.component';
 import { ValidateComponent } from './components/validate/validate.component';
+import { ChangeLoginPasswordComponent } from './change-login-password/change-login-password.component';
 
 const routes: Routes = [
-  { path: 'register',         component: RegisterComponent                              },
-  { path: 'validate',         component: ValidateComponent                              },
-  { path: 'login',            component: LoginComponent                                 },
-  { path: 'dashboard',        component: DashboardComponent,   canActivate: [AuthGuard] },
+  { path: 'register',              component: RegisterComponent                                      },
+  { path: 'validate',              component: ValidateComponent                                      },
+  { path: 'login',                 component: LoginComponent                                         },
+  { path: 'dashboard',             component: DashboardComponent,           canActivate: [AuthGuard] },
+  { path: 'change-login-password', component: ChangeLoginPasswordComponent, canActivate: [AuthGuard] },
 
-  { path: '**',               redirectTo: 'dashboard'                                   },
+  { path: '**',                    redirectTo: 'dashboard'                                           },
 ];
 
 @NgModule({

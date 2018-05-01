@@ -19,7 +19,7 @@ export class UserProfileService {
     private containerPasswordStorageService: ContainerPasswordStorageService,
     private api: ApiService,
     private cryptoService: CryptoService,
-    private utilsService: UtilsService,
+    private utils: UtilsService,
   ) { }
 
   private serialize(userProfile: { PasswordEntries: { [key: string]: string } }) {
@@ -47,7 +47,7 @@ export class UserProfileService {
 
       return this.deserialize(decrypted);
     } catch (e) {
-      return this.utilsService.throwContainerPasswordInputRequired();
+      return this.utils.throwContainerPasswordInputRequired();
     }
   }
 

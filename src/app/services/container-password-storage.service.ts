@@ -17,7 +17,7 @@ export class ContainerPasswordStorageService {
     private api: ApiService,
     private sessionService: SessionService,
     private cryptoService: CryptoService,
-    private utilsService: UtilsService,
+    private utils: UtilsService,
   ) { }
 
   private resetAndThrow(): never {
@@ -25,7 +25,7 @@ export class ContainerPasswordStorageService {
     this.salt = undefined;
     this.iv = undefined;
 
-    return this.utilsService.throwContainerPasswordInputRequired();
+    return this.utils.throwContainerPasswordInputRequired();
   }
 
   private async getContainerPasswordStorageKey(forceFresh = false): Promise<Uint8Array> {

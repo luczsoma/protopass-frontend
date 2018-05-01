@@ -52,7 +52,7 @@ export class DashboardComponent implements OnInit {
     private containerPasswordStorageService: ContainerPasswordStorageService,
     private sessionService: SessionService,
     private cryptoService: CryptoService,
-    private utilsService: UtilsService,
+    private utils: UtilsService,
   ) { }
 
   public async ngOnInit() {
@@ -116,7 +116,7 @@ export class DashboardComponent implements OnInit {
   }
 
   public get setupUserProfileAllValid(): boolean {
-    return this.utilsService.isPasswordStrongEnough(this.setupContainerPasswordInput1) &&
+    return this.utils.isPasswordStrongEnough(this.setupContainerPasswordInput1) &&
     this.setupContainerPasswordsMatch;
   }
 
@@ -156,7 +156,7 @@ export class DashboardComponent implements OnInit {
   }
 
   public get changeUserProfilePasswordAllValid(): boolean {
-    return this.utilsService.isPasswordStrongEnough(this.changeContainerPasswordInput1) &&
+    return this.utils.isPasswordStrongEnough(this.changeContainerPasswordInput1) &&
       this.changeContainerPasswordsMatch;
   }
 

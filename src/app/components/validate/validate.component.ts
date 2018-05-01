@@ -5,8 +5,8 @@ import { AlertService } from 'ngx-alerts';
 
 @Component({
   selector: 'app-validate',
-  templateUrl: './validate.component.html',
-  styleUrls: ['./validate.component.css']
+  template: '',
+  styles: ['']
 })
 export class ValidateComponent implements OnInit {
 

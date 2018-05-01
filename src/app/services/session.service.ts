@@ -4,6 +4,7 @@ import { ApiService } from './api.service';
 import { CryptoService } from './crypto.service';
 import { Convert } from '../utils/convert';
 import * as srp from 'secure-remote-password/client';
+import { AlertService } from 'ngx-alerts';
 
 @Injectable()
 export class SessionService {
@@ -12,6 +13,7 @@ export class SessionService {
     private router: Router,
     private cryptoService: CryptoService,
     private api: ApiService,
+    private alertService: AlertService,
   ) { }
 
   public get sessionId(): string | undefined {
@@ -52,7 +54,14 @@ export class SessionService {
       sessionId: string;
     } = await this.api.authenticate(email, clientSession.proof);
 
-    srp.verifySession(clientChallenge.public, clientSession, serverAuthenticateResponse.serverProof);
+    try {
+      srp.verifySession(clientChallenge.public, clientSession, serverAuthenticateResponse.serverProof);
+    } catch (e) {
+      throw { type: 'LoginError', errorCode: 'ServerProofInvalid' };
+    }
+
+    sessionStorage.setItem('sessionId', serverAuthenticateResponse.sessionId);
+    sessionStorage.setItem('email', email);
   }
 
   async logout(): Promise<void> {
@@ -66,6 +75,22 @@ export class SessionService {
       sessionStorage.clear();
       await this.router.navigate(['/login']);
     }
+  }
+
+  async changePassword(newPassword: string): Promise<void> {
+    const currentEmail = sessionStorage.getItem('email');
+
+    if (!currentEmail) {
+      this.logout();
+      this.alertService.info('Please log in again to change your login password.');
+      return;
+    }
+
+    const saltBytes: Uint8Array = this.cryptoService.cryptoRandomBytes(32);
+    const salt: string = Convert.bytesToBase64(saltBytes);
+    const verifier: string = await this.cryptoService.generateSrpVerifier(currentEmail, newPassword, saltBytes);
+
+    return await this.api.changePassword(salt, verifier, this.sessionId!);
   }
 
 }
