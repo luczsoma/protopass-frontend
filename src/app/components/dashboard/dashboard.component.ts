@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { UserProfileService } from '../../services/user-profile.service';
 import { AlertService } from 'ngx-alerts';
 import { ContainerPasswordStorageService } from '../../services/container-password-storage.service';
-import { ServerApiError } from '../../models/serverApiError.model';
 import { SessionService } from '../../services/session.service';
 import { CryptoService } from '../../services/crypto.service';
 import { UtilsService } from '../../services/utils.service';
@@ -21,7 +20,19 @@ export class DashboardComponent implements OnInit {
   public containerPasswordInputNeeded = false;
   public initialUserProfileSetup = false;
 
-  public containerPasswordInput = '';
+  public setupContainerPasswordInput1 = '';
+  public setupContainerPasswordInput2 = '';
+  public get setupContainerPasswordsMatch(): boolean {
+    return this.setupContainerPasswordInput1 === this.setupContainerPasswordInput2;
+  }
+
+  public openUserProfileContainerPasswordInput = '';
+
+  public changeContainerPasswordInput1 = '';
+  public changeContainerPasswordInput2 = '';
+  public get changeContainerPasswordsMatch(): boolean {
+    return this.changeContainerPasswordInput1 === this.changeContainerPasswordInput2;
+  }
 
   public newPasswordKey = '';
   public newPasswordValue = '';
@@ -53,6 +64,11 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  private async refreshData(): Promise<void> {
+    const keys = await this.userProfileService.getPasswordEntryKeysList();
+    keys.forEach(k => this.passwordEntries.set(k, this.hiddenPasswordString));
+  }
+
   private handleUserProfileErrors(e: { errorCode: string }) {
     switch (e.errorCode) {
       case 'InvalidSession':
@@ -73,7 +89,7 @@ export class DashboardComponent implements OnInit {
         break;
 
       case 'ConcurrentCallNotAllowed':
-        // not handled, not needed
+        // validation rule => not handled, user shouldn't hack
         break;
 
       default:
@@ -82,9 +98,66 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  private async refreshData(): Promise<void> {
-    const keys = await this.userProfileService.getPasswordEntryKeysList();
-    keys.forEach(k => this.passwordEntries.set(k, this.hiddenPasswordString));
+  public async setupUserProfile() {
+    if (!this.setupUserProfileAllValid) {
+      return;
+    }
+
+    await this.containerPasswordStorageService.storeContainerPassword(this.setupContainerPasswordInput1);
+    this.setupContainerPasswordInput1 = '';
+    this.setupContainerPasswordInput2 = '';
+
+    try {
+      await this.userProfileService.initializeEmptyUserProfile();
+      await this.refreshData();
+    } catch (e) {
+      this.handleUserProfileErrors(e);
+    }
+  }
+
+  public get setupUserProfileAllValid(): boolean {
+    return this.utilsService.isPasswordStrongEnough(this.setupContainerPasswordInput1) &&
+    this.setupContainerPasswordsMatch;
+  }
+
+  public async openUserProfile() {
+    if (!this.openUserProfileContainerPasswordInput) {
+      return;
+    }
+
+    await this.containerPasswordStorageService.storeContainerPassword(this.openUserProfileContainerPasswordInput);
+
+    try {
+      await this.refreshData();
+    } catch (e) {
+      this.handleUserProfileErrors(e);
+    }
+  }
+
+  public async changeUserProfilePassword() {
+    if (!this.changeUserProfilePasswordAllValid) {
+      return;
+    }
+
+    const newContainerPassword = this.changeContainerPasswordInput1;
+    this.changeContainerPasswordInput1 = '';
+    this.changeContainerPasswordInput2 = '';
+
+    if (this.userProfileLocked) {
+      return;
+    }
+
+    try {
+      await this.userProfileService.changeContainerPassword(newContainerPassword);
+      await this.refreshData();
+    } catch (e) {
+      this.handleUserProfileErrors(e);
+    }
+  }
+
+  public get changeUserProfilePasswordAllValid(): boolean {
+    return this.utilsService.isPasswordStrongEnough(this.changeContainerPasswordInput1) &&
+      this.changeContainerPasswordsMatch;
   }
 
   public async getPasswordOfKey(key: string): Promise<void> {
@@ -116,38 +189,7 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  public async containerPasswordInputSubmit() {
-    await this.containerPasswordStorageService.storeContainerPassword(this.containerPasswordInput);
-    this.containerPasswordInput = '';
-
-    if (this.initialUserProfileSetup) {
-      await this.userProfileService.initializeEmptyUserProfile();
-    }
-
-    try {
-      await this.refreshData();
-    } catch (e) {
-      this.handleUserProfileErrors(e);
-    }
-  }
-
-  public generateRandomPassword(): void {
-    let alphabet = '';
-    if (this.generatedPasswordLower) { alphabet += CryptoService.lower; }
-    if (this.generatedPasswordUpper) { alphabet += CryptoService.upper; }
-    if (this.generatedPasswordNumber) { alphabet += CryptoService.number; }
-    if (this.generatedPasswordSymbol) { alphabet += CryptoService.symbol; }
-
-    const length = this.generatedPasswordLength || 0;
-
-    this.newPasswordValue = this.cryptoService.randomFromAlphabet(length, alphabet);
-  }
-
   public async addNewPassword() {
-    if (this.userProfileLocked) {
-      return;
-    }
-
     if (!this.newPasswordKey) {
       this.alertService.warning('Please enter what is this password for.');
       return;
@@ -155,6 +197,10 @@ export class DashboardComponent implements OnInit {
 
     if (!this.newPasswordValue) {
       this.alertService.warning('You can\'t store empty passwords here. You just can\'t.');
+      return;
+    }
+
+    if (this.userProfileLocked) {
       return;
     }
 
@@ -174,6 +220,18 @@ export class DashboardComponent implements OnInit {
       this.generatedPasswordSymbol = true;
       this.generatedPasswordLength = 32;
     }
+  }
+
+  public generateRandomPassword(): void {
+    let alphabet = '';
+    if (this.generatedPasswordLower) { alphabet += CryptoService.lower; }
+    if (this.generatedPasswordUpper) { alphabet += CryptoService.upper; }
+    if (this.generatedPasswordNumber) { alphabet += CryptoService.number; }
+    if (this.generatedPasswordSymbol) { alphabet += CryptoService.symbol; }
+
+    const length = this.generatedPasswordLength || 0;
+
+    this.newPasswordValue = this.cryptoService.randomFromAlphabet(length, alphabet);
   }
 
 }

@@ -8,21 +8,21 @@
           <div *ngIf="initialUserProfileSetup">
             <p class="lead">Set up your profile password</p>
             <p>This password is responsible for the client-side encryption of your passwords stored in the
-              application. If you forget this, it can only be reset with losing access to all your passwords.
-              Keep it safe and do not forget it. Never. Ever.</p>
-            <div class="form-inline" (submit)="containerPasswordInputSubmit()">
+              application. If you forget this, it can not be reset. Keep it safe and do not forget it. Never. Ever.</p>
+            <div class="form-inline" (submit)="setupUserProfile()">
               <div class="form-group">
+                <label for="setup-container-password-1">Password</label>
                 <input type="password"
-                       id="container-password"
+                       id="setup-container-password-1"
                        class="form-control"
-                       name="container-password"
-                       #containerPasswordField="ngModel"
+                       name="setup-container-password-1"
+                       #setupContainerPasswordField1="ngModel"
                        appValidatePasswordStrengthOnInput
                        [ngClass]="{
-                         'is-valid': !containerPasswordField.invalid,
-                         'is-invalid': containerPasswordField.invalid && (containerPasswordField.dirty || containerPasswordField.touched)
+                         'is-valid': !setupContainerPasswordField1.invalid,
+                         'is-invalid': setupContainerPasswordField1.invalid && (setupContainerPasswordField1.dirty || setupContainerPasswordField1.touched)
                        }"
-                       [(ngModel)]="containerPasswordInput"
+                       [(ngModel)]="setupContainerPasswordInput1"
                        required>
                 <div class="invalid-feedback">
                   Your password should be at least 12 characters long, and include:
@@ -34,7 +34,23 @@
                   </ul>
                 </div>
               </div>
-              <button type="submit" class="btn btn-primary">Submit</button>
+              <div class="form-group">
+                <label for="setup-container-password-2">Confirmation</label>
+                <input type="password"
+                       id="setup-container-password-2"
+                       class="form-control"
+                       name="setup-container-password-2"
+                       [ngClass]="{
+                         'is-valid': setupContainerPasswordInput2.length > 0 && setupContainerPasswordsMatch,
+                         'is-invalid': setupContainerPasswordInput2.length > 0 && !setupContainerPasswordsMatch
+                       }"
+                       [(ngModel)]="setupContainerPasswordInput2"
+                       required>
+                <div class="invalid-feedback" [hidden]="!(setupContainerPasswordInput2.length > 0 && !setupContainerPasswordsMatch)">
+                  Your passwords do not match.
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary" [disabled]="!setupUserProfileAllValid">Go!</button>
             </div>
           </div>
 
@@ -42,13 +58,15 @@
             <p class="lead">Enter your profile password</p>
             <p>Every 10 minutes, you have to enter your container password again. This is to ensure the maximum
               security is achieved.</p>
-            <form class="form-inline" (submit)="containerPasswordInputSubmit()">
+            <form class="form-inline" (submit)="openUserProfile()">
               <div class="form-group">
                 <input type="password"
                        class="form-control"
-                       [(ngModel)]="containerPasswordInput">
+                       [(ngModel)]="openUserProfileContainerPasswordInput">
               </div>
-              <button type="submit" class="btn btn-primary">Submit</button>
+              <button type="submit"
+                      class="btn btn-primary"
+                      [disabled]="!openUserProfileContainerPasswordInput">Open your profile</button>
             </form>
           </div>
         </div>
@@ -79,6 +97,9 @@
                        id="new-password-value"
                        [(ngModel)]="newPasswordValue">
               </div>
+              <p>
+                <button type="submit" class="btn btn-success">Add password</button>
+              </p>
             </div>
 
             <div class="col-md-6">
@@ -123,9 +144,7 @@
               </div>
 
               <p>
-                <button class="btn btn-sm btn-primary"
-                        (click)="generateRandomPassword()"
-                        [disabled]="userProfileLocked">Generate</button>
+                <button class="btn btn-sm btn-primary" (click)="generateRandomPassword()">Generate</button>
               </p>
             </div>
           </div>
@@ -161,6 +180,56 @@
             </tr>
           </tbody>
         </table>
+      </div>
+      <div class="card-body">
+        <h5>Change your container password</h5>
+        <p>This password is responsible for the client-side encryption of your passwords stored in the
+          application. If you forget this, it can not be reset. Keep it safe and do not forget it. Never. Ever.</p>
+        <div class="form-inline" (submit)="changeUserProfilePassword()">
+          <div class="form-group">
+            <label for="change-container-password-1">Password</label>
+            <input type="password"
+                   id="change-container-password-1"
+                   class="form-control"
+                   name="change-container-password-1"
+                   #changeContainerPasswordField1="ngModel"
+                   appValidatePasswordStrengthOnInput
+                   [ngClass]="{
+                         'is-valid': !changeContainerPasswordField1.invalid,
+                         'is-invalid': changeContainerPasswordField1.invalid && (changeContainerPasswordField1.dirty || changeContainerPasswordField1.touched)
+                       }"
+                   [(ngModel)]="changeContainerPasswordInput1"
+                   required>
+            <div class="invalid-feedback">
+              Your password should be at least 12 characters long, and include:
+              <ul>
+                <li>at least 2 lowercase characters,</li>
+                <li>at least 2 uppercase characters,</li>
+                <li>at least 2 numbers,</li>
+                <li>at least 2 special symbols.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="change-container-password-2">Confirmation</label>
+            <input type="password"
+                   id="change-container-password-2"
+                   class="form-control"
+                   name="change-container-password-2"
+                   [ngClass]="{
+                         'is-valid': changeContainerPasswordInput2.length > 0 && changeContainerPasswordsMatch,
+                         'is-invalid': changeContainerPasswordInput2.length > 0 && !changeContainerPasswordsMatch
+                       }"
+                   [(ngModel)]="changeContainerPasswordInput2"
+                   required>
+            <div class="invalid-feedback" [hidden]="!(changeContainerPasswordInput2.length > 0 && !changeContainerPasswordsMatch)">
+              Your passwords do not match.
+            </div>
+          </div>
+          <button type="submit"
+                  class="btn btn-primary"
+                  [disabled]="!changeUserProfilePasswordAllValid">Change profile password</button>
+        </div>
       </div>
     </div>
   </div>
