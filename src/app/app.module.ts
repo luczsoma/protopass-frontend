@@ -24,6 +24,8 @@ import { ApiService } from './services/api.service';
 import { UserProfileService } from './services/user-profile.service';
 import { ContainerPasswordStorageService } from './services/container-password-storage.service';
 import { ChangeLoginPasswordComponent } from './change-login-password/change-login-password.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 
 @NgModule({
@@ -37,6 +39,8 @@ import { ChangeLoginPasswordComponent } from './change-login-password/change-log
     ValidatePasswordStrengthOnInputDirective,
     ValidateComponent,
     ChangeLoginPasswordComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent,
   ],
   imports: [
     BrowserModule,

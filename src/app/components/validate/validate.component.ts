@@ -17,7 +17,7 @@ export class ValidateComponent implements OnInit {
     private alertService: AlertService,
   ) {}
 
-  async ngOnInit() {
+  public async ngOnInit() {
     const queryParams: any = this.route.snapshot.queryParams;
     if (!queryParams.email || !queryParams.id) {
       await this.router.navigate(['/login']);

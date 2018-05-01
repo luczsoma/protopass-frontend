@@ -24,7 +24,7 @@ export class SessionService {
     return !!this.sessionId;
   }
 
-  async register(email: string, password: string): Promise<void> {
+  public async register(email: string, password: string): Promise<void> {
     const saltBytes: Uint8Array = this.cryptoService.cryptoRandomBytes(32);
     const salt: string = Convert.bytesToBase64(saltBytes);
     const verifier: string = await this.cryptoService.generateSrpVerifier(email, password, saltBytes);
@@ -32,7 +32,7 @@ export class SessionService {
     return await this.api.register(email, salt, verifier);
   }
 
-  async login(email: string, password: string): Promise<void> {
+  public async login(email: string, password: string): Promise<void> {
     const clientChallenge: srp.Ephemeral = srp.generateEphemeral();
     const serverChallengeResponse: {
       salt: string;
@@ -64,7 +64,7 @@ export class SessionService {
     sessionStorage.setItem('email', email);
   }
 
-  async logout(): Promise<void> {
+  public async logout(): Promise<void> {
     try {
       if (this.isLoggedIn()) {
         await this.api.logout(this.sessionId!);
@@ -77,7 +77,7 @@ export class SessionService {
     }
   }
 
-  async changePassword(newPassword: string): Promise<void> {
+  public async changePassword(newPassword: string): Promise<void> {
     const currentEmail = sessionStorage.getItem('email');
 
     if (!currentEmail) {
@@ -91,6 +91,17 @@ export class SessionService {
     const verifier: string = await this.cryptoService.generateSrpVerifier(currentEmail, newPassword, saltBytes);
 
     return await this.api.changePassword(salt, verifier, this.sessionId!);
+  }
+
+  public async sendPasswordResetEmail(email: string): Promise<void> {
+    await this.api.resetPasswordRequest(email);
+  }
+
+  public async resetPassword(id: string, email: string, newPassword: string): Promise<void> {
+    const saltBytes: Uint8Array = this.cryptoService.cryptoRandomBytes(32);
+    const salt: string = Convert.bytesToBase64(saltBytes);
+    const verifier: string = await this.cryptoService.generateSrpVerifier(email, newPassword, saltBytes);
+    await this.api.resetPassword(id, salt, verifier);
   }
 
 }
