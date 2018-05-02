@@ -7,7 +7,7 @@ declare type ServerApiRequestMethod = 'GET' | 'POST' | 'PUT';
 @Injectable()
 export class ApiService {
 
-  private static readonly baseUrl = 'https://protopass-backend.azurewebsites.net/api';
+  private static readonly baseUrl = 'https://protopass-backend.azurewebsites.net';
 
   constructor(
     private httpClient: HttpClient,
