@@ -42,11 +42,6 @@ echo "Handling Angular deployment."
 
 # 1. Copying the repository to temp
 echo "Copying the repository to temp"
-echo "Removing temp except node_modules"
-find ${DEPLOYMENT_TEMP} ! -name "node_modules" -exec rm -rf {} \;
-echo "Creating temp"
-mkdir ${DEPLOYMENT_TEMP}
-echo "Copying the files to temp"
 kudusync -v 50 -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TEMP" -i ".git;.deployment;deploy.sh" -x
 exitWithMessageOnError "Repository could not be copied to temp"
 
