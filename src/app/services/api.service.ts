@@ -28,6 +28,7 @@ export class ApiService {
 
     try {
       switch (method) {
+        default:
         case 'GET':
           return await this.httpClient.get<T>(requestUri, { headers: allHeaders }).toPromise();
 
