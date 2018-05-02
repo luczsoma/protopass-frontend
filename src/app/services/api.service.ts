@@ -8,7 +8,7 @@ declare type ServerApiRequestMethod = 'GET' | 'POST' | 'PUT';
 export class ApiService {
 
   private static readonly baseUrl = 'https://protopass-backend.azurewebsites.net/api';
-  
+
   constructor(
     private httpClient: HttpClient,
   ) { }
