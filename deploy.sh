@@ -29,11 +29,6 @@ echo Installing Kudu Sync
 npm.cmd install kudusync -g --silent
 exitWithMessageOnError "kudusync install failed"
 
-# Install Angular CLI
-echo Installing Angular CLI
-npm.cmd install @angular/cli -g --silent
-exitWithMessageOnError "Angular CLI install failed"
-
 ##################################################################################################################################
 # Deployment
 # ----------
@@ -42,7 +37,7 @@ echo "Handling Angular deployment."
 
 # 1. Copying the repository to temp
 echo "Copying the repository to temp"
-kudusync -v 50 -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TEMP" -i ".git;.deployment;deploy.sh" -x
+kudusync -v 50 -f ${DEPLOYMENT_SOURCE} -t ${DEPLOYMENT_TEMP} -i ".git;.deployment;deploy.sh" -x
 exitWithMessageOnError "Repository could not be copied to temp"
 
 # 2. Installing dependencies
@@ -55,12 +50,12 @@ popd
 # 3. Building the Angular application
 echo "Building the Angular application"
 pushd ${DEPLOYMENT_TEMP}
-ng build --target=production
+./node_modules/.bin/ng build --target=production
 exitWithMessageOnError "build failed"
 popd
 
 # 4. Copying the contents of temp/dist to /wwwroot
-kudusync -v 50 -f "$DEPLOYMENT_TEMP"/dist -t "$DEPLOYMENT_TARGET" -x
+kudusync -v 50 -f ${DEPLOYMENT_TEMP}/dist -t ${DEPLOYMENT_TARGET} -x
 exitWithMessageOnError "Copying to /wwwroot failed."
 
 
