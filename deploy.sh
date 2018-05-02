@@ -42,8 +42,8 @@ echo "Handling Angular deployment."
 
 # 1. Copying the repository to temp
 echo "Copying the repository to temp"
-echo "Removing temp"
-rm -rf ${DEPLOYMENT_TEMP}
+echo "Removing temp except node_modules"
+find ${DEPLOYMENT_TEMP} ! -name "node_modules" -exec rm -rf {} \;
 echo "Creating temp"
 mkdir ${DEPLOYMENT_TEMP}
 echo "Copying the files to temp"
