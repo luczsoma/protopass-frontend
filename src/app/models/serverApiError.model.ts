@@ -1,6 +1,6 @@
 export class ServerApiError {
   constructor(
-    public readonly endpointUri: string,
+    public readonly endpointName: string,
     public readonly errorCode: string,
   ) { }
 }

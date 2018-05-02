@@ -26,6 +26,7 @@ import { ContainerPasswordStorageService } from './services/container-password-s
 import { ChangeLoginPasswordComponent } from './change-login-password/change-login-password.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -49,6 +50,7 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
     NgbModule.forRoot(),
     FormsModule,
     AlertModule.forRoot({ maxMessages: 5, timeout: 5000 }),
+    HttpClientModule,
   ],
   providers: [
     { provide: SessionService, useClass: SessionService },

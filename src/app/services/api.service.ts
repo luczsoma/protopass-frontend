@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ServerApiError } from '../models/serverApiError.model';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 
 declare type ServerApiRequestMethod = 'GET' | 'POST' | 'PUT';
 
@@ -7,32 +8,40 @@ declare type ServerApiRequestMethod = 'GET' | 'POST' | 'PUT';
 export class ApiService {
 
   private static readonly baseUrl = 'https://protopass-backend.azurewebsites.net/api';
-
-  constructor() { }
+  
+  constructor(
+    private httpClient: HttpClient,
+  ) { }
 
   private async call<T>(
     endpointName: USVString,
     queryParams: Map<string, any>,
     method: ServerApiRequestMethod,
-    body: string | undefined,
+    body: any,
     headers: Map<string, string>,
   ): Promise<T> {
-    const requestInit: RequestInit = {
-      body,
-      headers: Array.from(headers),
-      method,
-      mode: 'cors',
-    };
     const queryParamsString: USVString = this.getQueryParamsString(queryParams);
     const requestUri: USVString = `${ApiService.baseUrl}/${endpointName}${queryParamsString}`;
-    const request = new Request(requestUri, requestInit);
 
-    const response: Response = await fetch(request);
-    if (response.ok) {
-      return await response.json();
-    } else {
-      const errorResponse = await response.json();
-      throw new ServerApiError(endpointName, errorResponse.error);
+    const allHeaders: HttpHeaders = new HttpHeaders();
+    headers.forEach((v, k) => allHeaders.set(k, v.toString()));
+
+    try {
+      switch (method) {
+        case 'GET':
+          return await this.httpClient.get<T>(requestUri, { headers: allHeaders }).toPromise();
+
+        case 'POST':
+          return await this.httpClient.post<T>(requestUri, body, { headers: allHeaders }).toPromise();
+
+        case 'PUT':
+          return await this.httpClient.put<T>(requestUri, body, { headers: allHeaders }).toPromise();
+      }
+    } catch (e) {
+      const errorCode = e instanceof HttpErrorResponse
+        ? e.error.error || 'UnknownError'
+        : 'NetworkError';
+      throw new ServerApiError(endpointName, errorCode);
     }
   }
 
@@ -47,11 +56,11 @@ export class ApiService {
     const endpointName: USVString = 'register';
     const queryParams: Map<string, any> = new Map<string, any>();
     const method: ServerApiRequestMethod = 'POST';
-    const body: string | undefined = JSON.stringify({
+    const body = {
       email,
       salt,
       verifier,
-    });
+    };
     const headers: Map<string, string> = new Map<string, string>();
 
     return await this.call<void>(endpointName, queryParams, method, body, headers);
@@ -64,7 +73,7 @@ export class ApiService {
       ['id', id],
     ]);
     const method: ServerApiRequestMethod = 'GET';
-    const body: string | undefined = undefined;
+    const body: any = undefined;
     const headers: Map<string, string> = new Map<string, string>();
 
     return await this.call<void>(endpointName, queryParams, method, body, headers);
@@ -77,10 +86,10 @@ export class ApiService {
     const endpointName: USVString = 'challenge';
     const queryParams: Map<string, any> = new Map<string, any>([]);
     const method: ServerApiRequestMethod = 'POST';
-    const body: string | undefined = JSON.stringify({
+    const body: any = {
       email: email,
       clientChallenge: clientChallenge,
-    });
+    };
     const headers: Map<string, string> = new Map<string, string>();
 
     return await this.call<{
@@ -96,10 +105,10 @@ export class ApiService {
     const endpointName: USVString = 'authenticate';
     const queryParams: Map<string, any> = new Map<string, any>([]);
     const method: ServerApiRequestMethod = 'POST';
-    const body: string | undefined = JSON.stringify({
+    const body: any = {
       email: email,
       clientProof: clientProof,
-    });
+    };
     const headers: Map<string, string> = new Map<string, string>();
 
     return await this.call<{
@@ -112,7 +121,7 @@ export class ApiService {
     const endpointName: USVString = 'logout';
     const queryParams: Map<string, any> = new Map<string, any>([]);
     const method: ServerApiRequestMethod = 'GET';
-    const body: string | undefined = undefined;
+    const body: any = undefined;
     const headers: Map<string, string> = new Map<string, string>([
       ['Authorization', `LoginSession ${sessionId}`],
     ]);
@@ -128,7 +137,7 @@ export class ApiService {
     const endpointName: USVString = 'downloadUserProfile';
     const queryParams: Map<string, any> = new Map<string, any>([]);
     const method: ServerApiRequestMethod = 'GET';
-    const body: string | undefined = undefined;
+    const body: any = undefined;
     const headers: Map<string, string> = new Map<string, string>([
       ['Authorization', `LoginSession ${sessionId}`],
     ]);
@@ -149,11 +158,11 @@ export class ApiService {
     const endpointName: USVString = 'uploadUserProfile';
     const queryParams: Map<string, any> = new Map<string, any>([]);
     const method: ServerApiRequestMethod = 'PUT';
-    const body: string | undefined = JSON.stringify({
+    const body: any = {
       encryptedUserProfile: encryptedUserProfile,
       containerKeySalt: containerKeySalt,
       initializationVector: initializationVector,
-    });
+    };
     const headers: Map<string, string> = new Map<string, string>([
       ['Authorization', `LoginSession ${sessionId}`],
     ]);
@@ -167,7 +176,7 @@ export class ApiService {
     const endpointName: USVString = 'getStorageKey';
     const queryParams: Map<string, any> = new Map<string, any>([]);
     const method: ServerApiRequestMethod = 'GET';
-    const body: string | undefined = undefined;
+    const body: any = undefined;
     const headers: Map<string, string> = new Map<string, string>([
       ['Authorization', `LoginSession ${sessionId}`],
     ]);
@@ -181,10 +190,10 @@ export class ApiService {
     const endpointName: USVString = 'changePassword';
     const queryParams: Map<string, any> = new Map<string, any>([]);
     const method: ServerApiRequestMethod = 'POST';
-    const body: string | undefined = JSON.stringify({
+    const body: any = {
       salt: salt,
       verifier: verifier,
-    });
+    };
     const headers: Map<string, string> = new Map<string, string>([
       ['Authorization', `LoginSession ${sessionId}`],
     ]);
@@ -194,9 +203,11 @@ export class ApiService {
 
   public async resetPasswordRequest(email: string): Promise<void> {
     const endpointName: USVString = 'resetPasswordRequest';
-    const queryParams: Map<string, any> = new Map<string, any>([]);
+    const queryParams: Map<string, any> = new Map<string, any>([
+      ['email', email],
+    ]);
     const method: ServerApiRequestMethod = 'GET';
-    const body: string | undefined = undefined;
+    const body: any = undefined;
     const headers: Map<string, string> = new Map<string, string>([]);
 
     return await this.call<void>(endpointName, queryParams, method, body, headers);
@@ -208,10 +219,10 @@ export class ApiService {
       ['id', id],
     ]);
     const method: ServerApiRequestMethod = 'POST';
-    const body: string | undefined = JSON.stringify({
+    const body: any = {
       salt: salt,
       verifier: verifier,
-    });
+    };
     const headers: Map<string, string> = new Map<string, string>([]);
 
     return await this.call<void>(endpointName, queryParams, method, body, headers);
