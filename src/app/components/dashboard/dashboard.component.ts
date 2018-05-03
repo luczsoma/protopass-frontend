@@ -13,9 +13,14 @@ import { UtilsService } from '../../services/utils.service';
 })
 export class DashboardComponent implements OnInit {
 
+  public loaded = false;
+
   private readonly hiddenPasswordString = '*'.repeat(32);
 
   public passwordEntries: Map<string, string> = new Map();
+  public get passwordEntriesArray() {
+    return Array.from(this.passwordEntries);
+  }
 
   public containerPasswordInputNeeded = false;
   public initialUserProfileSetup = false;
@@ -57,10 +62,18 @@ export class DashboardComponent implements OnInit {
 
   public async ngOnInit() {
     try {
+      if (!(await this.userProfileService.userProfileExists())) {
+        this.containerPasswordInputNeeded = true;
+        this.initialUserProfileSetup = true;
+        return;
+      }
+
       await this.refreshData();
     } catch (e) {
       this.handleUserProfileErrors(e);
       this.passwordEntries.clear();
+    } finally {
+      this.loaded = true;
     }
   }
 
@@ -99,6 +112,8 @@ export class DashboardComponent implements OnInit {
   }
 
   public async setupUserProfile() {
+    this.loaded = false;
+
     if (!this.setupUserProfileAllValid) {
       return;
     }
@@ -109,9 +124,15 @@ export class DashboardComponent implements OnInit {
 
     try {
       await this.userProfileService.initializeEmptyUserProfile();
+
+      this.containerPasswordInputNeeded = false;
+      this.initialUserProfileSetup = false;
+
       await this.refreshData();
     } catch (e) {
       this.handleUserProfileErrors(e);
+    } finally {
+      this.loaded = true;
     }
   }
 
@@ -125,12 +146,23 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+    this.loaded = false;
+
     await this.containerPasswordStorageService.storeContainerPassword(this.openUserProfileContainerPasswordInput);
+    this.openUserProfileContainerPasswordInput = '';
+
+    this.containerPasswordInputNeeded = false;
 
     try {
       await this.refreshData();
     } catch (e) {
+      if (e.errorCode === 'ContainerPasswordInputRequired') {
+        this.alertService.danger('Invalid password.');
+      }
+
       this.handleUserProfileErrors(e);
+    } finally {
+      this.loaded = true;
     }
   }
 
@@ -147,11 +179,16 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+    this.loaded = false;
+
     try {
       await this.userProfileService.changeContainerPassword(newContainerPassword);
       await this.refreshData();
+      this.alertService.success('Your profile password was successfully changed.');
     } catch (e) {
       this.handleUserProfileErrors(e);
+    } finally {
+      this.loaded = true;
     }
   }
 
@@ -165,11 +202,15 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+    this.loaded = false;
+
     try {
       const password = await this.userProfileService.getPasswordOfKey(key);
       this.passwordEntries.set(key, password);
     } catch (e) {
       this.handleUserProfileErrors(e);
+    } finally {
+      this.loaded = true;
     }
   }
 
@@ -177,6 +218,12 @@ export class DashboardComponent implements OnInit {
     if (this.userProfileLocked) {
       return;
     }
+
+    if (!confirm('Are you sure?')) {
+      return;
+    }
+
+    this.loaded = false;
 
     try {
       this.passwordEntries.delete(key);
@@ -186,6 +233,8 @@ export class DashboardComponent implements OnInit {
       this.alertService.success('Successful deletion.');
     } catch (e) {
       this.handleUserProfileErrors(e);
+    } finally {
+      this.loaded = true;
     }
   }
 
@@ -204,11 +253,13 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+    this.loaded = false;
+
     try {
       await this.userProfileService.storePasswordOfKey(this.newPasswordKey, this.newPasswordValue);
       await this.refreshData();
 
-      this.alertService.success('Your password is successfully stored.');
+      this.alertService.success('Your password was successfully stored.');
     } catch (e) {
       this.handleUserProfileErrors(e);
     } finally {
@@ -219,6 +270,7 @@ export class DashboardComponent implements OnInit {
       this.generatedPasswordNumber = true;
       this.generatedPasswordSymbol = true;
       this.generatedPasswordLength = 32;
+      this.loaded = true;
     }
   }
 

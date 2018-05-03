@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
-import { UtilsService } from '../services/utils.service';
-import { SessionService } from '../services/session.service';
+import { UtilsService } from '../../services/utils.service';
+import { SessionService } from '../../services/session.service';
+import { Router } from '@angular/router';
+import { AlertService } from 'ngx-alerts';
 
 @Component({
   selector: 'app-change-login-password',
@@ -18,6 +20,8 @@ export class ChangeLoginPasswordComponent {
   constructor(
     private utils: UtilsService,
     private sessionService: SessionService,
+    private router: Router,
+    private alertService: AlertService,
   ) { }
 
   public get allFieldsValid() {
@@ -31,6 +35,9 @@ export class ChangeLoginPasswordComponent {
     }
 
     await this.sessionService.changePassword(this.loginPassword1);
+
+    this.router.navigate(['/dashboard']);
+    this.alertService.success('Your login password was successfully changed.');
   }
 
 }

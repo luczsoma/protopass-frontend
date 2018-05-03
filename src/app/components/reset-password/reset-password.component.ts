@@ -52,6 +52,7 @@ export class ResetPasswordComponent implements OnInit {
     } catch (e) {
       switch (e.errorCode) {
         case 'InvalidId':
+        case 'BadInput':
           await this.router.navigate(['/login']);
           this.alertService.danger('The password reset link you entered is not valid.');
           return;

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { UtilsService } from '../../services/utils.service';
 import { AlertService } from 'ngx-alerts';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -23,6 +24,7 @@ export class RegisterComponent {
     private sessionService: SessionService,
     private utils: UtilsService,
     private alertService: AlertService,
+    private router: Router,
   ) { }
 
   public get allFieldsValid() {
@@ -34,6 +36,8 @@ export class RegisterComponent {
   public async register() {
     try {
       await this.sessionService.register(this.email, this.loginPassword1);
+      await this.router.navigate(['/login']);
+      this.alertService.success('Successful registration. Please visit your email address to validate yourself.');
     } catch (e) {
       switch (e.errorCode) {
         case 'UserAlreadyExists':

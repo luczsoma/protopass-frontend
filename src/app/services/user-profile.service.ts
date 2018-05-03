@@ -118,16 +118,31 @@ export class UserProfileService {
         await this.api.downloadUserProfile(this.sessionService.sessionId!);
       } catch (e) {
         if (e.errorCode === 'UserProfileNotFound') {
-          // this is the expected behaviour now, so initialize the empty user profile and upload it
           const userProfile = { PasswordEntries: {} };
           await this.encryptAndUpload(userProfile, containerPassword);
           return;
-        } else {
-          throw e;
         }
+
+        throw { errorCode: 'UserProfilePossibleOverwrite' };
       }
 
       throw { errorCode: 'UserProfilePossibleOverwrite' };
+    });
+  }
+
+  public async userProfileExists(): Promise<boolean> {
+    return await this.mutexCall(async () => {
+      try {
+        await this.api.downloadUserProfile(this.sessionService.sessionId!);
+      } catch (e) {
+        if (e.errorCode === 'UserProfileNotFound') {
+          return false;
+        }
+
+        throw e;
+      }
+
+      return true;
     });
   }
 

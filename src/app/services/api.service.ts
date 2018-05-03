@@ -23,8 +23,10 @@ export class ApiService {
     const queryParamsString: USVString = this.getQueryParamsString(queryParams);
     const requestUri: USVString = `${ApiService.baseUrl}/${endpointName}${queryParamsString}`;
 
-    const allHeaders: HttpHeaders = new HttpHeaders();
-    headers.forEach((v, k) => allHeaders.set(k, v.toString()));
+    let allHeaders = new HttpHeaders();
+    for (const [key, value] of Array.from(headers)) {
+      allHeaders = allHeaders.set(key, value.toString());
+    }
 
     try {
       switch (method) {
@@ -39,11 +41,30 @@ export class ApiService {
           return await this.httpClient.put<T>(requestUri, body, { headers: allHeaders }).toPromise();
       }
     } catch (e) {
-      const errorCode = e instanceof HttpErrorResponse
-        ? e.error.error || 'UnknownError'
-        : 'NetworkError';
-      throw new ServerApiError(endpointName, errorCode);
+      return this.handleApiErrors(e, endpointName);
     }
+  }
+
+  private handleApiErrors(e: any, endpointName: string): never {
+    let errorCode: string;
+
+    if (e instanceof HttpErrorResponse) {
+      if (e.error.error) {
+        errorCode = e.error.error;
+      } else if (
+        e.error.detail === 'Invalid token.' ||
+        e.error.detail === 'Authentication credentials were not provided.' ||
+        e.error.detail === 'Invalid token header. No credentials provided.'
+      ) {
+        errorCode = 'InvalidSession';
+      } else {
+        errorCode = 'UnknownError';
+      }
+    } else {
+      errorCode = 'NetworkError';
+    }
+
+    throw new ServerApiError(endpointName, errorCode);
   }
 
   private getQueryParamsString(queryParams: Map<string, any>): string {

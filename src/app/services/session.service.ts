@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
-import { CryptoService } from './crypto.service';
-import { Convert } from '../utils/convert';
 import * as srp from 'secure-remote-password/client';
 import { AlertService } from 'ngx-alerts';
 
@@ -11,7 +9,6 @@ export class SessionService {
 
   constructor(
     private router: Router,
-    private cryptoService: CryptoService,
     private api: ApiService,
     private alertService: AlertService,
   ) { }
@@ -25,22 +22,23 @@ export class SessionService {
   }
 
   public async register(email: string, password: string): Promise<void> {
-    const saltBytes: Uint8Array = this.cryptoService.cryptoRandomBytes(32);
-    const salt: string = Convert.bytesToBase64(saltBytes);
-    const verifier: string = await this.cryptoService.generateSrpVerifier(email, password, saltBytes);
+    const salt: string = srp.generateSalt();
+    const privateKey: string = srp.derivePrivateKey(salt, email, password);
+    const verifier: string = srp.deriveVerifier(privateKey);
 
     return await this.api.register(email, salt, verifier);
   }
 
   public async login(email: string, password: string): Promise<void> {
+    sessionStorage.clear();
+
     const clientChallenge: srp.Ephemeral = srp.generateEphemeral();
     const serverChallengeResponse: {
       salt: string;
       serverChallenge: string;
     } = await this.api.challenge(email, clientChallenge.public);
 
-    const saltBytes: Uint8Array = Convert.base64ToBytes(serverChallengeResponse.salt);
-    const privateKey: string = await this.cryptoService.deriveSrpPrivateKey(email, password, saltBytes);
+    const privateKey: string = srp.derivePrivateKey(serverChallengeResponse.salt, email, password);
     const clientSession: srp.Session = srp.deriveSession(
       clientChallenge.secret,
       serverChallengeResponse.serverChallenge,
@@ -81,14 +79,14 @@ export class SessionService {
     const currentEmail = sessionStorage.getItem('email');
 
     if (!currentEmail) {
-      this.logout();
+      await this.logout();
       this.alertService.info('Please log in again to change your login password.');
       return;
     }
 
-    const saltBytes: Uint8Array = this.cryptoService.cryptoRandomBytes(32);
-    const salt: string = Convert.bytesToBase64(saltBytes);
-    const verifier: string = await this.cryptoService.generateSrpVerifier(currentEmail, newPassword, saltBytes);
+    const salt: string = srp.generateSalt();
+    const privateKey: string = srp.derivePrivateKey(salt, currentEmail, newPassword);
+    const verifier: string = srp.deriveVerifier(privateKey);
 
     return await this.api.changePassword(salt, verifier, this.sessionId!);
   }
@@ -98,9 +96,9 @@ export class SessionService {
   }
 
   public async resetPassword(id: string, email: string, newPassword: string): Promise<void> {
-    const saltBytes: Uint8Array = this.cryptoService.cryptoRandomBytes(32);
-    const salt: string = Convert.bytesToBase64(saltBytes);
-    const verifier: string = await this.cryptoService.generateSrpVerifier(email, newPassword, saltBytes);
+    const salt: string = srp.generateSalt();
+    const privateKey: string = srp.derivePrivateKey(salt, email, newPassword);
+    const verifier: string = srp.deriveVerifier(privateKey);
     await this.api.resetPassword(id, salt, verifier);
   }
 

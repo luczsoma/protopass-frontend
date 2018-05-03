@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as srp from 'secure-remote-password/client';
 import * as scrypt from 'scrypt-async';
-import { Convert } from '../utils/convert';
 
 @Injectable()
 export class CryptoService {
@@ -44,17 +42,6 @@ export class CryptoService {
         resolve(Uint8Array.from(derivedKey as number[]));
       });
     });
-  }
-
-  public async deriveSrpPrivateKey(email: string, password: string, saltBytes: Uint8Array): Promise<string> {
-    const key: Uint8Array = Convert.stringToBytes(`${email}:${password}`);
-    const derivedKey: Uint8Array = await this.scrypt(key, saltBytes);
-    return Convert.bytesToHex(derivedKey);
-  }
-
-  public async generateSrpVerifier(email: string, password: string, saltBytes: Uint8Array): Promise<string> {
-    const privateKey: string = await this.deriveSrpPrivateKey(email, password, saltBytes);
-    return srp.deriveVerifier(privateKey);
   }
 
   public async encryptAesGcm(dataBytes: Uint8Array, keyBytes: Uint8Array, ivBytes: Uint8Array): Promise<Uint8Array> {

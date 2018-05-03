@@ -27,7 +27,7 @@ export class ValidateComponent implements OnInit {
 
     try {
       await this.api.validate(queryParams.email, queryParams.id);
-      this.alertService.success('You have been successfully validated your email. Please log in.');
+      this.alertService.success('You have successfully validated your email. Please log in.');
     } catch (e) {
       switch (e.errorCode) {
         case 'UserInWrongState':
