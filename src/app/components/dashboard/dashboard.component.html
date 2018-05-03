@@ -99,10 +99,13 @@
                   <td>{{ passwordEntry[0] }}</td>
                   <td>{{ passwordEntry[1] }}</td>
                   <td>
-                    <button class="btn btn-success btn-sm"
+                    <button *ngIf="!passwordIsCurrentlyVisible(passwordEntry[1])"
+                            class="btn btn-success btn-sm"
                             (click)="getPasswordOfKey(passwordEntry[0])"
-                            [disabled]="userProfileLocked">SHOW PASSWORD
-                    </button>
+                            [disabled]="userProfileLocked">SHOW PASSWORD</button>
+                    <button *ngIf="passwordIsCurrentlyVisible(passwordEntry[1])"
+                            class="btn btn-success btn-sm"
+                            (click)="hidePasswordOfKey(passwordEntry[0])">HIDE PASSWORD</button>
                   </td>
                   <td>
                     <button class="btn btn-danger btn-sm"
@@ -124,10 +127,9 @@
       <div class="col">
         <div class="card">
           <h5 class="card-header">
-            Generate new password
+            Add new password
           </h5>
           <div class="card-body">
-            <h5>Add new password</h5>
             <form (submit)="addNewPassword()">
               <div class="form-group">
                 <label for="new-password-key">Service name</label>
@@ -151,7 +153,9 @@
               </p>
             </form>
 
-            <h6>Generate password</h6>
+            <hr>
+
+            <h6>Generate password to the above field</h6>
 
             <div class="form-group">
               <label for="length">Length</label>
@@ -190,9 +194,7 @@
 
             <br>
 
-            <p>
-              <button class="btn btn-primary" (click)="generateRandomPassword()">Generate</button>
-            </p>
+            <button class="btn btn-primary" (click)="generateRandomPassword()">Generate</button>
           </div>
         </div>
       </div>
@@ -202,10 +204,9 @@
       <div class="col">
         <div class="card">
           <h5 class="card-header">
-            Change your container password
+            Change your profile password
           </h5>
           <div class="card-body">
-            <h5>Change your container password</h5>
             <p>This password is responsible for the client-side encryption of your passwords stored in the
               application. If you forget this, it can not be reset. Keep it safe and do not forget it. Never. Ever.</p>
             <form (submit)="changeUserProfilePassword()">

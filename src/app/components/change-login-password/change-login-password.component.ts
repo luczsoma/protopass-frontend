@@ -13,7 +13,8 @@ export class ChangeLoginPasswordComponent {
 
   public loginPassword1 = '';
   public loginPassword2 = '';
-  public loginPasswordsMatch(): boolean {
+
+  public get loginPasswordsMatch(): boolean {
     return this.loginPassword1 === this.loginPassword2;
   }
 

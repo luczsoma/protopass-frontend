@@ -99,7 +99,7 @@ export class SessionService {
     const salt: string = srp.generateSalt();
     const privateKey: string = srp.derivePrivateKey(salt, email, newPassword);
     const verifier: string = srp.deriveVerifier(privateKey);
-    await this.api.resetPassword(id, salt, verifier);
+    await this.api.resetPassword(id, email, salt, verifier);
   }
 
 }

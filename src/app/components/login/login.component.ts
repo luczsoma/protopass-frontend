@@ -35,6 +35,7 @@ export class LoginComponent implements OnInit {
     try {
       await this.sessionService.login(this.email, this.password);
       await this.router.navigate(['/dashboard']);
+      this.alertService.success('You have logged in.');
     } catch (e) {
       this.alertService.warning('We could not log you in. Please review your credentials.');
     } finally {

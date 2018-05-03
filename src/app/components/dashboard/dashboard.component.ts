@@ -15,7 +15,7 @@ export class DashboardComponent implements OnInit {
 
   public loaded = false;
 
-  private readonly hiddenPasswordString = '*'.repeat(32);
+  public readonly hiddenPasswordString = '*'.repeat(32);
 
   public passwordEntries: Map<string, string> = new Map();
   public get passwordEntriesArray() {
@@ -214,6 +214,10 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  public hidePasswordOfKey(key: string): void {
+    this.passwordEntries.set(key, this.hiddenPasswordString);
+  }
+
   public async deletePasswordOfKey(key: string): Promise<void> {
     if (this.userProfileLocked) {
       return;
@@ -244,7 +248,7 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    if (!this.newPasswordValue) {
+    if (!this.newPasswordValue || this.newPasswordValue === this.hiddenPasswordString) {
       this.alertService.warning('You can\'t store empty passwords here. You just can\'t.');
       return;
     }
@@ -284,6 +288,10 @@ export class DashboardComponent implements OnInit {
     const length = this.generatedPasswordLength || 0;
 
     this.newPasswordValue = this.cryptoService.randomFromAlphabet(length, alphabet);
+  }
+
+  public passwordIsCurrentlyVisible(password: string): boolean {
+    return password !== this.hiddenPasswordString;
   }
 
 }

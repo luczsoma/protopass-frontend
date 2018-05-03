@@ -235,10 +235,11 @@ export class ApiService {
     return await this.call<void>(endpointName, queryParams, method, body, headers);
   }
 
-  public async resetPassword(id: string, salt: string, verifier: string): Promise<void> {
+  public async resetPassword(id: string, email: string, salt: string, verifier: string): Promise<void> {
     const endpointName: USVString = 'resetPassword';
     const queryParams: Map<string, any> = new Map<string, any>([
       ['id', id],
+      ['email', email],
     ]);
     const method: ServerApiRequestMethod = 'POST';
     const body: any = {
