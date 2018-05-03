@@ -49,12 +49,14 @@ export class ApiService {
     let errorCode: string;
 
     if (e instanceof HttpErrorResponse) {
-      if (e.error.error) {
-        errorCode = e.error.error;
+      const apiErrorResponse: any = e.error;
+
+      if (apiErrorResponse.error) {
+        errorCode = apiErrorResponse.error;
       } else if (
-        e.error.detail === 'Invalid token.' ||
-        e.error.detail === 'Authentication credentials were not provided.' ||
-        e.error.detail === 'Invalid token header. No credentials provided.'
+        apiErrorResponse.detail === 'Invalid token.' ||
+        apiErrorResponse.detail === 'Authentication credentials were not provided.' ||
+        apiErrorResponse.detail === 'Invalid token header. No credentials provided.'
       ) {
         errorCode = 'InvalidSession';
       } else {

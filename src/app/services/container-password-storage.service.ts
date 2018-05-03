@@ -3,7 +3,6 @@ import { ApiService } from './api.service';
 import { SessionService } from './session.service';
 import { Convert } from '../utils/convert';
 import { CryptoService } from './crypto.service';
-import { Utf8 } from '../utils/utf8';
 import { UtilsService } from './utils.service';
 
 @Injectable()
@@ -20,11 +19,14 @@ export class ContainerPasswordStorageService {
     private utils: UtilsService,
   ) { }
 
-  private resetAndThrow(): never {
+  public clear(): void {
     this.encryptedContainerPassword = undefined;
     this.salt = undefined;
     this.iv = undefined;
+  }
 
+  private clearAndThrow(): never {
+    this.clear();
     return this.utils.throwContainerPasswordInputRequired();
   }
 
@@ -49,7 +51,7 @@ export class ContainerPasswordStorageService {
 
   public async getContainerPassword(): Promise<string> {
     if (!this.encryptedContainerPassword || !this.salt || !this.iv) {
-      return this.resetAndThrow();
+      return this.clearAndThrow();
     }
 
     const storageKey: Uint8Array = await this.getContainerPasswordStorageKey();
@@ -58,9 +60,9 @@ export class ContainerPasswordStorageService {
     try {
       const containerPasswordBytes: Uint8Array = await this.cryptoService.decryptAesGcm(this.encryptedContainerPassword,
         derivedKey, this.iv);
-      return Utf8.decode(containerPasswordBytes);
+      return Convert.bytesToString(containerPasswordBytes);
     } catch (e) {
-      return this.resetAndThrow();
+      return this.clearAndThrow();
     }
   }
 
